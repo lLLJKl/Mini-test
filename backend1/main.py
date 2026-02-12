@@ -1,7 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter, Depends
+from pydantic import BaseModel, Field
+from db import findAll, findOne, save
+
+
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
+@app.post("/")
+def get_user():
   return {"Hello": "World"}
+
+
+@app.put("/")
+def 
