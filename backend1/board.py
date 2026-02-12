@@ -18,7 +18,7 @@ class BoardEditModel(BaseModel):
   content: str = Field(..., title="내용", description="게시글에서 수정 할 내용 입니다.")
 
 @router.put("")
-def board(boardAddModel: BoardAddModel, payload = Depends(get_user)):
+def board_add(boardAddModel: BoardAddModel, payload = Depends(get_user)):
   if payload:
     sql = f"INSERT INTO mini.`board` (`title`, `content`, `userNo`) VALUE ('{boardAddModel.title}', '{boardAddModel.content}', {payload["sub"]})"
     data = add_key(sql)
@@ -27,11 +27,11 @@ def board(boardAddModel: BoardAddModel, payload = Depends(get_user)):
   return {"status": False, "message": "게시글 추가 중 오류가 발생 되었습니다."}
 
 @router.post("")
-def board(boardSearchModel: BoardSearchModel):
+def board_list(boardSearchModel: BoardSearchModel):
   cnt = 5
   sql1 = f"""SELECT b.`no`, b.`title`, b.`content`, u.`name`
-      FROM edu.`board` AS b
-     INNER JOIN edu.`user` AS u
+      FROM mini.`board` AS b
+     INNER JOIN mini.`user` AS u
         ON (b.`userNo` = u.`no` AND u.`delYn` = 0)
      WHERE b.`delYn` = 0 
        AND b.`title` LIKE '%{boardSearchModel.search}%' 
@@ -42,8 +42,8 @@ def board(boardSearchModel: BoardSearchModel):
   pagination = {"page": boardSearchModel.page + 1, "total": 0}
   if len(result) > 0:
     sql2 = sql = f"""SELECT count(*) as total 
-      FROM edu.`board` AS b
-    INNER JOIN edu.`user` AS u
+      FROM mini.`board` AS b
+    INNER JOIN mini.`user` AS u
         ON (b.`userNo` = u.`no` AND u.`delYn` = 0)
     WHERE b.`delYn` = 0 
       AND b.`title` LIKE '%{boardSearchModel.search}%'
@@ -55,10 +55,10 @@ def board(boardSearchModel: BoardSearchModel):
   return {"status": False, "result": [], "pagination": pagination, "message": "게시글은 존재 하지 않습니다."}
 
 @router.post("/{no}")
-def board(no: int, payload = Depends(get_user)):
+def board_detail(no: int, payload = Depends(get_user)):
   sql = f"""SELECT b.`no`, b.`title`, b.`content`, u.`name`, b.`userNo`
-      FROM edu.`board` AS b
-    INNER JOIN edu.`user` AS u
+      FROM mini.`board` AS b
+    INNER JOIN mini.`user` AS u
         ON (b.`userNo` = u.`no` AND u.`delYn` = 0)
     WHERE b.`delYn` = 0 
       AND b.`no` = {no}
@@ -73,17 +73,17 @@ def board(no: int, payload = Depends(get_user)):
   return {"status": False, "message": "요청하신 게시글은 존재 하지 않습니다."}
 
 @router.patch("/{no}")
-def board(no: int, boardEditModel: BoardEditModel, payload = Depends(get_user)):
+def board_edit(no: int, boardEditModel: BoardEditModel, payload = Depends(get_user)):
   if payload:
-    sql = f"UPDATE edu.`board` SET `content` = '{boardEditModel.content}' WHERE `no` = {no}"
+    sql = f"UPDATE mini.`board` SET `content` = '{boardEditModel.content}' WHERE `no` = {no}"
     if save(sql):
       return {"status": True, "message": "게시글 수정이 정상 처리가 되었습니다."}
   return {"status": False, "message": "게시글 수정 중 오류가 발생 되었습니다."}
 
 @router.delete("/{no}")
-def board(no: int, payload = Depends(get_user)):
+def board_delete(no: int, payload = Depends(get_user)):
   if payload:
-    sql = f"UPDATE edu.`board` SET `delYn` = 1 WHERE `no` = {no}"
+    sql = f"UPDATE mini.`board` SET `delYn` = 1 WHERE `no` = {no}"
     if save(sql):
       return {"status": True, "message": "게시글 삭제가 정상 처리가 되었습니다."}
   return {"status": False, "message": "게시글 삭제 중 오류가 발생 되었습니다."}

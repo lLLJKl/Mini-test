@@ -81,3 +81,5 @@ return (
         </div>
     );
 };
+
+export default Board_edit;

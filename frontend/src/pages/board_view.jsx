@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { api } from '@/utils/network.js'; 
+import { useAuth } from '@/hooks/Authprovider.jsx';
 
 
 const Board_view = () => {

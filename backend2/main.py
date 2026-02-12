@@ -3,6 +3,7 @@ from kafka import KafkaConsumer
 from settings import settings
 import threading
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import json
 import random
@@ -13,6 +14,14 @@ kafka_server=settings.kafka_server
 kafka_topic=settings.kafka_topic
 
 app = FastAPI(title="Consumer")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # 실제 서비스에서는 ["http://localhost:5173"] 권장
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 client = redis.Redis(
   host=settings.redis_host,

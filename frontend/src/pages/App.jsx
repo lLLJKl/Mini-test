@@ -10,6 +10,7 @@ import Login from '@pages/login.jsx';
 import Board_edit from "@pages/Board_edit.jsx";
 import Board_view from "@pages/Board_view.jsx";
 import Board_add from "@pages/Board_add.jsx";
+import Signup from "@pages/Signup.jsx";
 
 
 const App = () => {
@@ -17,7 +18,7 @@ const App = () => {
     {path: "/", element: <Home />},
     {path: "/user_view", element: <UserView />},
     {path: "/user_edit", element: <UserEdit />},
-    {path: "/signup", element: <Signup />},
+    {path: "/Signup", element: <Signup />},
     {path: "/login", element: <Login />},
     {path: "*", element: <NotFound />},
     {path: "/board_edit", element: <Board_edit />},

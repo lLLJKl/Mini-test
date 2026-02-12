@@ -39,7 +39,7 @@ const Signup = () => {
       .then((res) => {
         if (res.data.status) 
             alert(`${name}님 가입을 축하합니다!`);
-        else(!res.data.status) 
+        else{res.data.status}
             alert("가입 실패, 중복 확인이 필요합니다");
       })
       .catch((err) => {
@@ -75,13 +75,13 @@ const Signup = () => {
                     <div className="d-flex">
                         <div className="p-2 flex-fill">
                             <div className="form-check">
-                                <input type="radio" className="form-check-input" id="radio1" name="gender" value="1" checked={gender} onChange={()=>setGender(True)}/>남성
+                                <input type="radio" className="form-check-input" id="radio1" name="gender" value="1" checked={gender === true} onChange={()=>setGender(True)}/>남성
                                 <label className="form-check-label" htmlFor="radio1"></label>
                             </div>
                         </div>
                         <div className="p-2 flex-fill">
                             <div className="form-check">
-                                <input type="radio" className="form-check-input" id="radio2" name="gender" value="2" checked={!gender} onChange={()=>setGender(false)}/>여성
+                                <input type="radio" className="form-check-input" id="radio2" name="gender" value="2" checked={gender === false} onChange={()=>setGender(false)}/>여성
                                 <label className="form-check-label" htmlFor="radio2"></label>
                             </div>
                         </div>
