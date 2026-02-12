@@ -2,7 +2,8 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams} from "react-router" 
 import axios from "axios"   
 import {useAuth} from '@/hooks/Auth_provider.jsx'
- 
+ import { api } from "@/util/api.jsx"
+
  const Board_view = () =>{
     const [no,set_no] = useState(0)
     const [title,set_title] = useState("")
@@ -12,11 +13,11 @@ import {useAuth} from '@/hooks/Auth_provider.jsx'
     const [new_comment,set_new_comment] = useState("")  
     const {user} = useAuth();
     const params = useParams();
-    const naviagte = useNavigate()
+    const navigate = useNavigate()
    
     const del_event = () =>{
         if (window.confirm("삭제하시겠습니까?"))
-          api.delete = ((`board$/{params.no}` ))            
+          api.delete ((`board$/{params.no}` ))            
           .then(res=>{
                    alert(res.data.message)
                    if(res.data.status) navigate ("/")
@@ -41,7 +42,7 @@ import {useAuth} from '@/hooks/Auth_provider.jsx'
             set_role(res.data.role)
           } else {
             alert(res.data.message);
-            naviagte("/");
+            navigate("/");
         }
     })
     .catch(err=>console.error(err));
@@ -49,6 +50,8 @@ import {useAuth} from '@/hooks/Auth_provider.jsx'
    
 
     return(
+                   
+            <>
        <div className="container mt-3">
 		<h1 className="display-4 text-center">게시글</h1>
 		 <div className="card mb-4">
@@ -106,8 +109,11 @@ import {useAuth} from '@/hooks/Auth_provider.jsx'
             <button type="button" className="btn btn-success btn-sm bottom-0 start- mx-2 mt-3">등록</button>    
          </div>
     </div>
+
+    </>
+
     );
 };
 			
 
-export default Board_view;
+export default Board_view
