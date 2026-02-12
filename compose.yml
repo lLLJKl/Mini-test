@@ -1,0 +1,102 @@
+services:
+  kafka:
+    container_name: kafka
+    image: apache/kafka:4.0.1
+    restart: always
+    ports:
+      - 9092:9092
+    networks:
+      - my-bridge
+    working_dir: /opt/kafka/bin/
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  redis:
+    container_name: redis
+    image: redis:8.4.0
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - my-bridge
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb:12.1.2
+    restart: always
+    ports:
+      - 3306:3306
+    networks:
+      - my-bridge
+    volumes:
+      - ./mariadb/conf.d:/etc/mysql/conf.d:ro
+      - ./mariadb/data:/var/lib/mysql:rw
+      - ./mariadb/initdb.d:/docker-entrypoint-initdb.d:ro
+    environment:
+      - MARIADB_HOST=localhost
+      - MARIADB_PORT=3306
+      - MARIADB_ROOT_PASSWORD=1234
+      - MARIADB_DATABASE=edu
+      - TZ=Asia/Seoul
+      - LC_ALL:en_US.UTF-8
+
+  app1:
+    container_name: backend1.com
+    image: uv:1
+    ports:
+      - 8001:8000
+    networks:
+      - my-bridge
+    depends_on:
+      - kafka
+      - redis
+      - mariadb
+    working_dir: /workspace
+    volumes:
+      - ./backend1:/workspace
+    command: ["sleep", "infinity"]
+    # command: ["uv", "run", "fastapi", "run"]
+
+  backend2:
+    container_name: backend2.com
+    image: uv:1
+    ports:
+      - 8002:8000
+    networks:
+      - my-bridge
+    depends_on:
+      - kafka
+      - redis
+      - mariadb
+    working_dir: /workspace
+    volumes:
+      - ./backend2:/workspace
+    command: ["sleep", "infinity"]
+    # command: ["uv", "run", "fastapi", "run"]
+  
+  frontend:
+    container_name: frontend.com
+    image: node:24.13.0
+    ports:
+      - 80:5173
+    networks:
+      - my-bridge
+    depends_on:
+      - backend1
+      - backend2
+    working_dir: /workspace
+    volumes:
+      - ./frontend:/workspace
+    command: ["sleep", "infinity"]
+    # command: [ "npm", "run", "dev" ]
+
+networks:
+  my-bridge:
+    driver: bridge
