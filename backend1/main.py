@@ -43,9 +43,9 @@ pd = KafkaProducer(
   value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
 
-def set_token(no: int):
+def set_token(email: str):
   try:
-    result = findOne(f"SELECT `no` FROM mini.user WHERE `email` = '{no}'")
+    result = findOne(f"SELECT `no` FROM mini.user WHERE `email` = '{email}'")
     if result:
       iat = datetime.now(timezone.utc) + (timedelta(hours=7))
       exp = iat + (timedelta(minutes=settings.access_token_expire_minutes))
@@ -57,7 +57,7 @@ def set_token(no: int):
       }
       id = uuid.uuid4().hex
       token = jwt.encode(data, settings.secret_key, algorithm=settings.algorithm)
-      sql = f"INSERT INTO mini.`login` (`id`, `user_no`, `token`) VALUE ('{id}', {result["no"]}, '{token}')"
+      sql = f"INSERT INTO mini.`login` (`id`, `user_no`, `token`) VALUE ('{id}', {result['no']}, '{token}')"
       if save(sql): return id
   except JWTError as e:
     print(f"JWT ERROR : {e}")
@@ -73,14 +73,15 @@ def check_email(email: EmailStr):
     result = findOne(sql)
     if result:
         print(result["state"])
-        return {"status": result["state"] == 1}
+        return {"status": result["state"] >= 1}
     return {"status": False}
 
 @app.post("/signup")
 def signup(model: SignUpModel):
+    gender_val = 1 if model.gender else 0
     sql = f"""
       INSERT INTO mini.`user` (`name`, `email`, `gender`)
-      VALUES ('{model.name}', '{model.email}', {model.gender})
+      VALUES ('{model.name}', '{model.email}', {gender_val})
     """
     save(sql)
     return {"status": True}
