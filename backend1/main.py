@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, APIRouter, Depends
 from fastapi.responses import FileResponse
 from pathlib import Path
 from typing import List
@@ -10,9 +10,10 @@ from kafka import KafkaProducer
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from settings import settings
-from db import findOne, save
+from db import findOne, save, findAll
 import json
 import redis
+
 
 class FileItem(BaseModel):
   filename: str
@@ -48,6 +49,7 @@ pd = KafkaProducer(
 origins = [  "http://localhost:5173" ]
 # settings.react_url,
 app = FastAPI()
+
 
 app.add_middleware(
 
