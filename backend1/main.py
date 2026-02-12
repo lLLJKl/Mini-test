@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
@@ -10,7 +11,18 @@ import json
 import redis
 import uuid
 
+
+origins = [  "http://localhost:5173" ]
+# settings.react_url,
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 origins = [settings.react_url]
 
