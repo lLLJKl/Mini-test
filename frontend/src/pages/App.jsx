@@ -1,6 +1,8 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { BrowserRouter, Routes, Route } from "react-router";
+import Login from '@pages/login.jsx'
+import Signup from "@pages/signup.jsx";
 
 const Home = () => {
   return (
@@ -22,6 +24,8 @@ const NotFound = () => {
 const App = () => {
   const paths = [
     {path: "/", element: <Home />},
+    {path: "/signup", element: <Signup />},
+    {path: "/login", element: <Login />},
     {path: "*", element: <NotFound />},
   ]
   return (
