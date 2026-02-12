@@ -35,6 +35,7 @@ const Nav = () => {
             }
 						
 					</ul>
+          <img src="../img01.jpg" className="border user_pt_nav mt-1 object-fit-cover"></img>
 				</div>
 			</div>
 		</nav>
