@@ -1,7 +1,10 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { Routes, Route } from "react-router";
-import Home from '@pages/Home.jsx'
+import UserView from "@/pages/user/UserView.jsx";
+import UserEdit from "@/pages/user/UserEdit.jsx";
+import Home from "@/pages/Home.jsx";
+import NotFound from "@/pages/NotFound.jsx";
 import Nav from '@pages/Nav.jsx'
 import Login from '@pages/login.jsx'
 import Signup from "@pages/signup.jsx";
@@ -14,10 +17,11 @@ const NotFound = () => {
     </div>
   )
 }
-
 const App = () => {
   const paths = [
     {path: "/", element: <Home />},
+    {path: "/user_view", element: <UserView />},
+    {path: "/user_edit", element: <UserEdit />},
     {path: "/signup", element: <Signup />},
     {path: "/login", element: <Login />},
     {path: "*", element: <NotFound />},
