@@ -5,12 +5,13 @@ import { fileURLToPath, URL } from 'url'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // base: "/",
-  // server: {
-  //   host: '0.0.0.0',
-  //   port: 5173,
-  //   allowedHosts: ['localhost','app2'],
-  // },
+  base: "/",
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    allowedHosts: ['react','localhost','react.shellfolder.com','quadecologics.cloud','react.myapp.com'],
+    // host: true,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
