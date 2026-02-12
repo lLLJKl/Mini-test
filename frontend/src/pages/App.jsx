@@ -5,9 +5,12 @@ import UserView from "@/pages/user/UserView.jsx";
 import UserEdit from "@/pages/user/UserEdit.jsx";
 import Home from "@/pages/Home.jsx";
 import NotFound from "@/pages/NotFound.jsx";
-import Nav from '@pages/Nav.jsx'
-import Login from '@pages/login.jsx'
-import Signup from "@pages/signup.jsx";
+import Nav from '@pages/Nav.jsx';
+import Login from '@pages/login.jsx';
+import Board_edit from "@pages/Board_edit.jsx";
+import Board_view from "@pages/Board_view.jsx";
+import Board_add from "@pages/Board_add.jsx";
+
 
 const App = () => {
   const paths = [
@@ -17,8 +20,9 @@ const App = () => {
     {path: "/signup", element: <Signup />},
     {path: "/login", element: <Login />},
     {path: "*", element: <NotFound />},
-    {path: "board_edit", element: <Board_edit />},
-    {path: "board_view", element: <Board_view />},
+    {path: "/board_edit", element: <Board_edit />},
+    {path: "/board_view", element: <Board_view />},
+    {path: "/board_add", element: <Board_add />}
     
   ]
   return (
