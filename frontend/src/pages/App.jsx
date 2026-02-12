@@ -17,6 +17,9 @@ const App = () => {
     {path: "/signup", element: <Signup />},
     {path: "/login", element: <Login />},
     {path: "*", element: <NotFound />},
+    {path: "board_edit", element: <Board_edit />},
+    {path: "board_view", element: <Board_view />},
+    
   ]
   return (
     <>
