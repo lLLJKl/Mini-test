@@ -3,6 +3,8 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { Routes, Route } from "react-router";
 import Home from '@pages/Home.jsx'
 import Nav from '@pages/Nav.jsx'
+import Login from '@pages/login.jsx'
+import Signup from "@pages/signup.jsx";
 
 const NotFound = () => {
   return (
@@ -16,6 +18,8 @@ const NotFound = () => {
 const App = () => {
   const paths = [
     {path: "/", element: <Home />},
+    {path: "/signup", element: <Signup />},
+    {path: "/login", element: <Login />},
     {path: "*", element: <NotFound />},
   ]
   return (
