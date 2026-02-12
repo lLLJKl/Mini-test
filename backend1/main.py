@@ -13,6 +13,8 @@ from settings import settings
 from db import findOne, save, findAll, add_key
 import json
 import redis
+import user
+import board
 
 
 class FileItem(BaseModel):
@@ -68,7 +70,7 @@ FILE_CONTENT_TYPE = "image/png"
 def checkDir():
   UPLOAD_DIR.mkdir(exist_ok=True)
 
-def saveFile(file, no):
+def saveFile(file):
   checkDir()
   origin = file.filename 
   ext = file.filename.split(".")[-1].lower()
@@ -90,11 +92,11 @@ def saveFile(file, no):
   return 0 
 
 @app.post("/upload")
-def upload(no: int = Form(), files: List[UploadFile] = File(), txt : str = Form()):
+def upload(files: List[UploadFile] = File(), txt : str = Form()):
   print(txt)
   arr = []
   for file in files:
-    arr.append(saveFile(file, no))
+    arr.append(saveFile(file))
   return {"status" : True, "result": arr }
 
 @app.get("/images")
@@ -197,3 +199,8 @@ def code(model: CodeModel, response : Response):
     )
       return {"status": True}
   return {"status": False}
+
+
+apis = [  user.router, board.router ]
+for router in apis:
+  app.include_router(router)
