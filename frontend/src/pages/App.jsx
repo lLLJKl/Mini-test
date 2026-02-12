@@ -12,13 +12,13 @@ import Signup from "@pages/signup.jsx";
 const App = () => {
   const paths = [
     {path: "/", element: <Home />},
-    {path: "/user_view", element: <UserView />},
-    {path: "/user_edit", element: <UserEdit />},
+    {path: "/userview", element: <UserView />},
+    {path: "/useredit", element: <UserEdit />},
     {path: "/signup", element: <Signup />},
     {path: "/login", element: <Login />},
     {path: "*", element: <NotFound />},
-    {path: "board_edit", element: <Board_edit />},
-    {path: "board_view", element: <Board_view />},
+    // {path: "board_edit", element: <Board_edit />},
+    // {path: "board_view", element: <Board_view />},
     
   ]
   return (

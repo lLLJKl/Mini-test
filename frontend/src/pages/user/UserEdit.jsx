@@ -4,41 +4,45 @@ import { useAuth } from '@hooks/AuthProvider.jsx'
 import { api } from '@utils/network.js'
 
 const UserEdit =() =>{
-	const [no, setNo] = useState(0)
+  const config = {
+    headers : {
+      "Content-Type": "multipart/form-data"
+    }
+  }
+	  const [no, setNo] = useState(0)
   	const [name, setName] = useState("")
   	const [email, setEmail] = useState("")
   	const [gender, setGender] = useState(true)
-	const [previewImg, setPreviewImg] = useState("../img01.jpg")
-    const [base64File, setBase64File] = useState(null)
-
+	  const [previewImg, setPreviewImg] = useState("../img_01.jpg")
+   
   	const { checkAuth } = useAuth()
   	const navigate = useNavigate()
-  	const submitEvent = e => {
+
+    const event = e => {
     e.preventDefault()
-    const params = { no,name,email, gender: gender ? 1:0, file: base64File }
-    api.patch("/user", params)
-    .then(res=>{
-      alert(res.data.message)
-      if(res.data.status) navigate("/user_view")
-    })
-    .catch(err => console.error(err))
-  }
-  
+    console.log(files)
+    const formData = new FormData();
+    formData.append("txt", e.target.txt.value)
+    files.forEach(file => formData.append("files", file))
+    axios.post("http://localhost:8001/upload", formData, config)
+    .then (res=>console.log(res))
+    .catch(err=>console.error(err))
+  } 
+  	
 
-  	const imgEvent = () => {
-      const img = document.getElementById("preview");
-      const x = document.createElement("input");
-      x.type = "file";
-      x.accept = "image/*";
-
-      x.addEventListener("change", function (event) {
+ 	const imgEvent = () => {
+     const img = document.getElementById("preview");
+     const x = document.createElement("input");
+     x.type = "file";
+     x.accept = "image/*";
+     x.addEventListener("change", function (event) {
         const file = event.target.files[0];
         if (file) {
           const reader = new FileReader();
           reader.onload = function (e) {
             img.src = e.target.result;
-			savefile(e.target.result)
-			console.log(e.target.result)
+            savefile(e.target.result)
+            console.log(e.target.result)
           };
           reader.readAsDataURL(file);
         }
@@ -51,7 +55,9 @@ const UserEdit =() =>{
     setName(data.name)
     setEmail(data.email)
     setGender(data.gender)
+    
   }
+ 
   useEffect(()=>{
     if(!checkAuth()) navigate("/")
     api.post("/user")
@@ -66,46 +72,13 @@ const UserEdit =() =>{
     })
     .catch(err => console.error(err))
   }, [])
-  	
- 	const event2 = async e => {
-    e.preventDefault()
-    const fileList = e.target.file.files
-    const txt = e.target.txt.value
-    const files = []
-    for(let i = 0; i < fileList.length; i++) {
-      const file = fileList[i]
-      const base64File = await fileToBase64(file)
-      files[i] = base64File
-    }
-    const params = { txt, files }
-    axios.post("http://localhost:8000/upload", params)
-    .then(res=>console.log(res))
-    .catch(err=>console.error(err))
-  	}
-  	
-	const fileToBase64 = file => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file)
-
-      reader.onload = () => {
-        const data = reader.result.split(",")[1]
-        resolve(data)
-      }
-
-      reader.onerror = err => {
-        console.error(err)
-        reject(err)
-      }
-    })
-  	}
 
     return (
     <>
     <div className="container mt-3">
 		<h1 className="display-1 text-center">회원정보 수정</h1>
       <div className="d-flex justify-content-center">
-		<form onSubmit={event2}>
+		<form onSubmit={event}>
 		<div className="form">
 			<img className="d-block rounded-circle img-thumbnail mt-3 border user_pt" src={previewImg} alt="logo" id="preview" onClick={imgEvent} />
             <input type="file" name="file" id="file1" multiple accept="image/*" />
@@ -151,5 +124,5 @@ const UserEdit =() =>{
 	</div>
     </>
     )
-}
+  }
 export default UserEdit
