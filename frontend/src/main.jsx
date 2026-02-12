@@ -8,7 +8,7 @@ import { CookiesProvider } from 'react-cookie'
 
 createRoot(document.getElementById('root')).render(
   // <StrictMode>
-    <CookiesProvider defaultSetOptions={{ path: '/', maxAge: (60 * 60 * 24), secure: true, sameSite: 'lax' }}>
+    <CookiesProvider defaultSetOptions={{ path: '/', maxAge: (60 * 30), secure: true, sameSite: 'lax' }}>
       <BrowserRouter>
         <AuthProvider>
           <App />
