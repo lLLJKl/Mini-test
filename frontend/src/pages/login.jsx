@@ -11,7 +11,7 @@ const Login = () => {
   const sendMail = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:8000/login", { email })
+      .post("http://localhost:8001/login", { email })
       .then((res) => {
         if (res.data.status) alert("메일 발송 요청 완료");
         else alert("메일 발송 실패");
@@ -25,7 +25,7 @@ const Login = () => {
   const verify = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:8000/code", 
+      .post("http://localhost:8001/code", 
         { id: code }, 
         { withCredentials: true }
     )

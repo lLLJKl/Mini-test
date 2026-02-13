@@ -8,7 +8,6 @@ const Nav = () => {
 
   const { isLogin, removeAuth } = useAuth()
 
-  api.
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
 			<div className="container-fluid">
@@ -36,7 +35,7 @@ const Nav = () => {
                   <button className="nav-link" onClick={()=>removeAuth()}>로그아웃</button>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/user_view">회원정보</a>
+                  <a className="nav-link" href="/userview">회원정보</a>
                 </li>
               </>
             }

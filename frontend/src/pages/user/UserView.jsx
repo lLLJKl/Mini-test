@@ -19,6 +19,27 @@ const UserView = () =>{
     })
     .catch(err => console.error(err))
   }
+  const setData = data => {
+    setName(data.name)
+    setEmail(data.email)
+    setGender(data.gender)
+    setRegDate(data.regDate)
+    setModDate(data.modDate)
+  }
+  useEffect(()=>{
+    if(!checkAuth()) navigate("/")
+    api.post("/user")
+    .then(res=>{
+      if(res.data.status) {
+        setData(res.data.result)
+        setRole(res.data.role)
+      } else {
+        alert(res.data.message);
+        navigate("/");
+      }
+    })
+    .catch(err => console.error(err))
+  }, [])
 	return(
 		<>
 		<div className="container mt-3 position-relative">

@@ -52,9 +52,9 @@ const Home = () => {
     getData(index, search)
   }
   const boardAdd = () => {
-    if(checkAuth()) navigate('/board_add')
+    if(checkAuth()) navigate('/boardAdd')
   }
-  const boardView = no => navigate(`/board_view/${no}`)
+  const boardView = no => navigate(`/boardView/${no}`)
   
   const getData = (i, q) => {
     const params = {

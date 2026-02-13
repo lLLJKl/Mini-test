@@ -1,18 +1,11 @@
-from fastapi import FastAPI, APIRouter, Depends, Response
-import uuid
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr
-from kafka import KafkaProducer
-from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
 from settings import settings
-from db import findOne, save, findAll, add_key
-import json
-import redis
 import user
 import board
 import auth
 import home
+import upload
 
 
 origins = [  "http://localhost:5173" ]
@@ -31,7 +24,7 @@ app.add_middleware(
 )
 
 
-apis = [  user.router, board.router, auth.router, home.router ]
+apis = [  upload.router, user.router, board.router, auth.router, home.router ]
 for router in apis:
   app.include_router(router)
   
