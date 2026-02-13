@@ -31,9 +31,9 @@ const Login = () => {
     )
       .then((res) => {
         if (res.data.status) 
-        alert("인증 성공");
+        alert("인증 성공"),
+        navigator("/")
         else alert("인증 실패");
-        navigator("/home")
       })
       .catch((err) => {
         console.error(err);

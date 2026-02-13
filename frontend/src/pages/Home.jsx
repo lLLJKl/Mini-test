@@ -52,8 +52,13 @@ const Home = () => {
     getData(index, search)
   }
   const boardAdd = () => {
-    if(checkAuth()) navigate('/board_add')
+  if (!checkAuth()) {
+    alert("로그인이 필요합니다.");
+    navigate("/login");
+    return;
   }
+  navigate("/board_add");
+};
   const boardView = no => navigate(`/board_view/${no}`)
   
   const getData = (i, q) => {
