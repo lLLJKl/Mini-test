@@ -1,52 +1,46 @@
-import { useAuth } from '@hooks/AuthProvider.jsx'
-import { api } from '@utils/network.js'
-
-
+import { Link } from "react-router";
+import { useAuth } from "@hooks/AuthProvider.jsx";
 
 const Nav = () => {
+  const { isLogin, removeAuth } = useAuth();
 
-
-  const { isLogin, removeAuth } = useAuth()
-
-  api.
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
-			<div className="container-fluid">
-				<a className="navbar-brand" href="/">Team1</a>
-				<button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-					<span className="navbar-toggler-icon"></span>
-				</button>
-				<div className="collapse navbar-collapse" id="navbarNav">
-					<ul className="navbar-nav" me-auto="true">
-            {
-              !isLogin && 
-              <>
-              <li className="nav-item">
-                <a className="nav-link" href="/login">로그인</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="/signup">회원가입</a>
-              </li>
-              </>
-            }
-            {
-              isLogin && 
-              <>
-                <li className="nav-item">
-                  <button className="nav-link" onClick={()=>removeAuth()}>로그아웃</button>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="/user_view">회원정보</a>
-                </li>
-              </>
-            }
-						
-					</ul>
-          <img src="../img01.jpg" className="border user_pt_nav mt-1 object-fit-cover"></img>
-				</div>
-			</div>
-		</nav>
-  )
-}
+      <div className="container-fluid">
+        <Link className="navbar-brand" to="/">Team1</Link>
 
-export default Nav
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav me-auto">
+            {!isLogin && (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/login">로그인</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/signup">회원가입</Link>
+                </li>
+              </>
+            )}
+
+            {isLogin && (
+              <>
+                <li className="nav-item">
+                  <button className="nav-link" type="button" onClick={removeAuth}>
+                    로그아웃
+                  </button>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user_view">회원정보</Link>
+                </li>
+              </>
+            )}
+          </ul>
+
+          <img src="/img01.jpg" className="border user_pt_nav mt-1 object-fit-cover" />
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Nav;
