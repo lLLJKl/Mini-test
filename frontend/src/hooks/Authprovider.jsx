@@ -25,8 +25,9 @@ const AuthProvider = ({ children }) => {
   }, []);
 
 
-  const setAuth = () => {
-    setIsLogin(true);
+  const setAuth = async () => {
+    setLoading(true);
+    await refreshAuth(); 
     navigate("/");
   };
 

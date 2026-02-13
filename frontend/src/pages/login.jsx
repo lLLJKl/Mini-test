@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import axios from "axios";
-
+import { useAuth } from '@/hooks/Authprovider.jsx';
+import { api } from '@/utils/network.js';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const navigator = useNavigate();
+  const navigate = useNavigate();
+  const { refreshAuth } = useAuth();
 
   const sendMail = (e) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:8001/login", { email })
+    api
+      .post("login", { email })
       .then((res) => {
         if (res.data.status) alert("메일 발송 요청 완료");
         else alert("메일 발송 실패");
@@ -24,16 +25,17 @@ const Login = () => {
 
   const verify = (e) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:8001/code", 
-        { id: code }, 
-        { withCredentials: true }
-    )
-      .then((res) => {
-        if (res.data.status) 
-        alert("인증 성공");
-        else alert("인증 실패");
-        navigator("/home")
+    api
+      .post("/code", { id: code }, 
+      { withCredentials: true })
+      .then(async (res) => {
+        if (res.data.status) {
+          alert("인증 성공");
+          await refreshAuth();     //여기서 즉시 로그인 상태 갱신
+          navigate("/");           //새로고침 없이 nav가 바뀜
+        } else {
+          alert("인증 실패");
+        }
       })
       .catch((err) => {
         console.error(err);

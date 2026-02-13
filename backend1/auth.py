@@ -37,6 +37,6 @@ def set_token(no: int):
 
 @router.get("/me")
 def me(payload = Depends(get_user)):
-    if not payload:
-        return {"status": False}
-    return {"status": True, "user": {"no": payload["sub"]}}
+    if payload:
+        return {"status": True}
+    return {"status": False}

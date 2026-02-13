@@ -9,15 +9,32 @@ const UserView = () =>{
 	const [regDate, setRegDate] = useState("");
 	const [modDate, setModDate] = useState("");
 	const [gender, setGender] = useState(true);
+	const [profile, setProfile] = useState(0)
 	const { clearAuth, checkAuth } = useAuth()
 	const navigate = useNavigate()
-	const deleteEvent = () => {
+
+	const path = "http://localhost:8001/"
+
+ 
+  const getUrl = () => {
+	// profile 번호가 있으면 서버 이미지
+	if (profile && profile > 0)
+	  return `${path}/profile?no=${profile}`
+	//  없으면 기본 이미지
+	else
+	  return "/img_01.jpg"
+  }
+
+   // deleteEvent 누를 때 사용자 탈퇴가 되도록 FastAPI에 요청 보내서 업데이트 되도록 함
+	const deleteEvent = () => {   
     api.delete("/user")
     .then(res=>{
       alert(res.data.message)
       if(res.data.status) clearAuth()
     })
     .catch(err => console.error(err))
+
+   // 로그인 시 name, email, gender, regDate, modDate, profile이 기본적으로 나오도록 data 설정
   }
   const setData = data => {
     setName(data.name)
@@ -25,15 +42,23 @@ const UserView = () =>{
     setGender(data.gender)
     setRegDate(data.regDate)
     setModDate(data.modDate)
+	setProfile(data.profile ?? 0)
   }
+
+  // 컴포넌트가 처음 화면에 나타날 떄 자동 실행되는 데 
   useEffect(()=>{
+	// 로그인 ❌ 이면 홈(/)으로 강제 이동, 로그인 ⭕ 이면 아래 코드 계속 실행
     if(!checkAuth()) navigate("/")
+	 // 백엔드 FastAPI /user 엔드포인트에 요청 보내서 현재 로그인한 유저 정보 달라고 요청
     api.post("/user")
+	// 서버가 정상 응답 줬으면
     .then(res=>{
       if(res.data.status) {
+	// 서버에서 받은 유저 정보를 React state에 저장
         setData(res.data.result)
-        setRole(res.data.role)
+        // setRole(res.data.role)
       } else {
+		// 서버가 “인증 실패” or “유저 없음” 응답 주면 , 경고 띄우고 홈으로 튕김
         alert(res.data.message);
         navigate("/");
       }
@@ -42,11 +67,17 @@ const UserView = () =>{
   }, [])
 	return(
 		<>
+	
 		<div className="container mt-3 position-relative">
 		<h1 className="display-1 text-center">회원정보</h1>
-		<div>
-			<img src="../img01.jpg" className="border user_pt"/>
-    </div>
+			<div className="d-flex justify-content-center">
+			<img
+			src={getUrl()}
+			className="d-block rounded-circle img-thumbnail mt-3 border user_pt"
+			alt="프로필 이미지"
+			style={{ width: "150px", height: "150px", objectFit: "cover" }}
+			/> 
+			</div>
 		<form>
 			<div>
 				<div className="mb-3 mt-3">

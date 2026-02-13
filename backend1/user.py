@@ -5,17 +5,16 @@ from auth import get_user
 
 router = APIRouter(prefix="/user", tags=["사용자"])
 
-class UserModel(BaseModel):
-  name:str = Field(..., title="이름", description="사용자 이름 입니다.")
-  email: EmailStr = Field(..., title="이메일 주소", description="사용자 식별를 위한 이메일 주소 입니다.")
-  mod_date: str = Field(..., title="수정 날짜", description="사용자 정보 수정 날짜 입니다.")
 
-  gender: bool = Field(..., title="성별", description="사용자 식별를 위한  성별 입니다.")
+
+class UserModel(BaseModel):
+  email: EmailStr = Field(..., title="이메일 주소", description="사용자 식별를 위한 이메일 주소 입니다.")
+
 
 @router.post("")
 def user(payload = Depends(get_user)):
   if payload:
-    sql = f"""SELECT `no`, `name`, `email`,`gender`, 
+    sql = f"""SELECT `no`, `name`, `email`,`gender`,`origin`,`ext`,`new_name`, 
                      DATE_FORMAT(reg_date, '%Y-%m-%d') as regDate, 
                      DATE_FORMAT(mod_date, '%Y-%m-%d') as modDate 
                 FROM mini.`user` 

@@ -7,9 +7,7 @@ import auth
 import home
 import upload
 
-
 origins = [  "http://localhost:5173" ]
-# settings.react_url,
 
 app = FastAPI()
 
@@ -25,6 +23,7 @@ app.add_middleware(
 
 
 apis = [  upload.router, user.router, board.router, auth.router, home.router ]
+
 for router in apis:
   app.include_router(router)
   
