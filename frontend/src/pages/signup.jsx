@@ -8,6 +8,8 @@ const Signup = () => {
   const [gender, setGender] = useState(true);
   const navigate = useNavigate();
   
+    // check: 중복확인을 위한 이벤트 함수입니다.
+    // back1: home.py - check_email 엔드포인트를 통해서 mini.user에 중복된 이메일이 있는지 확인합니다.
     const check = (e) => {
     e.preventDefault();
 
@@ -28,6 +30,9 @@ const Signup = () => {
         });
     }
 
+
+    // submit: 최종 회원가입을 위한 이벤트 함수입니다.
+    // back1: home.py - signup 엔드포인트를 통해서 mini.user에 name, email, gender의 정보를 가진 회원을 추가합니다.
     const submit = (e) => {
         e.preventDefault();
 
@@ -37,9 +42,8 @@ const Signup = () => {
             if (res.data.status) {
                 alert(`${name}님 가입을 축하합니다!`);
                 navigate("/login");
-            } else {
-                alert("가입 실패");
-            }
+            } else {alert("가입 실패");
+              }
             })
             .catch((err) => {
             console.error(err);

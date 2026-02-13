@@ -11,7 +11,8 @@ import { useAuth } from '@hooks/AuthProvider.jsx'
     const { checkAuth } = useAuth()
     
     
-    
+   // submit_event: 게시글 등록을 위한 이벤트 함수입니다.
+   // backend1: board.py-add 엔드포인트로 mini.board에 글을 {title, content}형식으로 추가합니다
    const submit_event = e =>{
        e.preventDefault()
        const params ={title,content} 
@@ -34,8 +35,9 @@ import { useAuth } from '@hooks/AuthProvider.jsx'
         
       }
    useEffect(()=>{
-    if(!checkAuth()) navigate("/");
-  }, [])
+      if(!checkAuth()) navigate("/");
+   }, [])
+
    const click = e => {
       e.preventDefault()
       navigate("/")

@@ -32,7 +32,7 @@ conf = ConnectionConfig(
   USE_CREDENTIALS = settings.use_credentials,
   VALIDATE_CERTS = settings.validate_certs
 )
-
+# simple_send: producer에서 보낸 email 정보를 id를 생성하여 id:email 형식으로 redis에 저장하기 위한 일종의 redis 레시피 부분입니다.
 async def simple_send(email: str):
   # key = uuid.uuid4().hex
   id = ''.join(random.choices(string.digits, k=6))
@@ -51,6 +51,8 @@ async def simple_send(email: str):
   fm = FastMail(conf)
   await fm.send_message(message)
 
+
+# kafka consumer 함수 부분입니다. 이 부분에서 redis에서 id:email의 id 부분(코드 6자리)를 만들고 전달하기 위한 함수 입니다. 
 def consumer():
   cs = KafkaConsumer(
     kafka_topic, 
@@ -62,6 +64,8 @@ def consumer():
     print(msg)
     asyncio.run(simple_send(msg.value["email"]))
 
+
+# 실질적으로 메일을 발송하게 되는 트리거 엔드포인트 입니다.
 @app.on_event("startup")
 def startConsumer():
   thread = threading.Thread(target=consumer, daemon=True)
