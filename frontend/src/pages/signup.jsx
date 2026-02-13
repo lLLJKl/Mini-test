@@ -6,48 +6,46 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [gender, setGender] = useState(true);
-
   const navigate = useNavigate();
   
-  const check = (e) => {
+    const check = (e) => {
     e.preventDefault();
 
     if (!email || !name) {
-      alert("정보를 입력하세요");
-      return;
+        alert("정보를 입력하세요");
+        return;
+    }
+    
+    axios
+        .post("http://localhost:8000/check_email", null, { params: { email } })
+        .then((res) => {
+        if (res.data.status) alert("이미 사용중인 이메일");
+        else alert("사용 가능한 이메일");
+        })
+        .catch((err) => {
+        console.error(err);
+        alert("오류 발생");
+        });
     }
 
-    axios
-      .get("http://localhost:8001/check_email", { params: { email } })
-      .then((res) => {
-        if (res.data.status === "duplicate") 
-            alert("이미 사용중인 이메일");
-        else if (res.data.status === "ok") 
-            alert("사용 가능한 이메일");
-        else alert("응답 이상");
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("오류 발생");
-      });
-  };
+    const submit = (e) => {
+        e.preventDefault();
 
-  const submit = (e) => {
-    e.preventDefault();
-    axios
-      .post("http://localhost:8001/signup", {params})
-      .then((res) => {
-        if (res.data.status) 
-            alert(`${name}님 가입을 축하합니다!`);
-        else(!res.data.status) 
-            alert("가입 실패, 중복 확인이 필요합니다");
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("오류 발생");
-    });
-
-  };
+        axios
+            .post("http://localhost:8000/signup", { name, email, gender })
+            .then((res) => {
+            if (res.data.status) {
+                alert(`${name}님 가입을 축하합니다!`);
+                navigate("/login");
+            } else {
+                alert("가입 실패");
+            }
+            })
+            .catch((err) => {
+            console.error(err);
+            alert("오류 발생");
+            });
+        };
 
 
   const back = (e) => {

@@ -1,7 +1,6 @@
-import { useState } from "react"
-import { usetNavigate, useParams} from "react-router" 
-import axios from "axios"   
-
+import { useState, useEffect } from "react"
+import { useNavigate, useParams } from "react-router"
+import { api } from '@/utils/network.js';
 
 
 
@@ -12,7 +11,7 @@ const Board_edit = () =>{
         const [content, set_content] = useState("")
         const [name, set_name] = useState("")
         const params = useParams();
-        const naviagte = usetNavigate()
+        const navigate = usetNavigate()
         const submit_event = e =>{
         e.prevent_default()
         const params ={title,content} 
@@ -29,43 +28,58 @@ const Board_edit = () =>{
         set_content(data.content)
         set_name(data.name)
         set_title(data.title)
-    
+    };
+   useEffect(() => {
+        api.post(`/board/${params.no}`)
+            .then(res => {
+                if (res.data.status) {
+                    set_data(res.data.result);
+                } else {
+                    alert(res.data.message);
+                    navigate("/");
+                }
+            })
+            .catch(err => console.error(err));
+    }, [params.no]); 
 
-    
-  return (
-    <>
-    <div class="container mt-3">
-		<h1 class="display-1 text-center">게시글 수정</h1>
-		<form>
-			<div class="mb-3 mt-3">
-				<label for="title" class="form-label">제목</label>
-				<input type="text" class="form-control" id="title" placeholder="제목을 입력하세요." name="title" />
-			</div>
-			<div class="mb-3 mt-3">
-				<label for="name" class="form-label">작성자</label>
-				<input type="text" class="form-control" id="name" name="name" disabled />
-			</div>
-			<div class="mb-3 mt-3">
-				<label for="content" class="form-label">내용</label>
-				<textarea type="text" class="form-control h-50" rows="10" placeholder="내용을 입력하세요."
-					name="content"></textarea>
-			</div>
-			<div class="d-flex">
-				<div class="p-2 flex-fill d-grid">
-					<button type="submit" className="btn btn-primary" >저장</button>
-				</div>
-				<div class="p-2 flex-fill d-grid">
-					<button type="button"  className="btn btn-primary" onClick={(navigate=("/"))}>취소</button>
-				</div>
-			</div>
-		</form>
-	</div>
-    
-    </>
-  )
+return (
+        <div className="container mt-3">
+            <h1 className="display-1 text-center">게시글 수정</h1>
+            <form onSubmit={submit_event}>
+                <div className="mb-3 mt-3">
+                    <label htmlFor="title" className="form-label">제목</label>
+                    <input 
+                        type="text" 
+                        className="form-control" 
+                        id="title" 
+                        value={title} 
+                        onChange={(e) => set_title(e.target.value)} 
+                    />
+                </div>
+                <div className="mb-3 mt-3">
+                    <label htmlFor="name" className="form-label">작성자</label>
+                    <input type="text" className="form-control" id="name" value={name} disabled />
+                </div>
+                <div className="mb-3 mt-3">
+                    <label htmlFor="content" className="form-label">내용</label>
+                    <textarea 
+                        className="form-control h-50" 
+                        rows="10" 
+                        value={content} 
+                        onChange={(e) => set_content(e.target.value)}
+                    ></textarea>
+                </div>
+                <div className="d-flex">
+                    <div className="p-2 flex-fill d-grid">
+                        <button type="submit" className="btn btn-primary">저장</button>
+                    </div>
+                    <div className="p-2 flex-fill d-grid">
+                        <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>취소</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
+};
 
-    }
-
-}
-
-export default Board_edit 
+export default Board_edit;

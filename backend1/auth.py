@@ -1,9 +1,11 @@
-from fastapi import Cookie
+from fastapi import Cookie, Depends, APIRouter
 from settings import settings
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from db import findOne, save
 import uuid
+
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 def get_user(user: str = Cookie(None)):
   if user:
@@ -12,3 +14,29 @@ def get_user(user: str = Cookie(None)):
     if result:
       return jwt.decode(result["token"], settings.secret_key, algorithms=settings.algorithm)
   return None
+
+def set_token(no: int):
+  try:
+    result = findOne(f"SELECT `no` FROM mini.user WHERE `email` = '{no}'")
+    if result:
+      iat = datetime.now(timezone.utc) + (timedelta(hours=7))
+      exp = iat + (timedelta(minutes=settings.access_token_expire_minutes))
+      data = {
+        "iss": "EDU",
+        "sub": str(result["no"]),
+        "iat": iat,
+        "exp": exp
+      }
+      id = uuid.uuid4().hex
+      token = jwt.encode(data, settings.secret_key, algorithm=settings.algorithm)
+      sql = f"INSERT INTO mini.`login` (`id`, `user_no`, `token`) VALUE ('{id}', {result["no"]}, '{token}')"
+      if save(sql): return id
+  except JWTError as e:
+    print(f"JWT ERROR : {e}")
+  return None
+
+@router.get("/me")
+def me(payload = Depends(get_user)):
+    if not payload:
+        return {"status": False}
+    return {"status": True, "user": {"no": payload["sub"]}}
