@@ -1,9 +1,6 @@
 from fastapi import APIRouter, Depends, Response
-import uuid
 from pydantic import BaseModel, EmailStr
 from kafka import KafkaProducer
-from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
 from settings import settings
 from db import findOne, save, findAll, add_key
 from auth import set_token
@@ -72,19 +69,6 @@ def checkCode(code: str):
     host=settings.redis_host,
     port=settings.redis_port,
     db=0,
-    decode_responses=True
-  )
-  result = client.get(code)
-  if result:
-    client.delete(code)
-    return result
-  return None
-
-def checkUser(code: str):
-  client = redis.Redis(
-    host=settings.redis_host,
-    port=settings.redis_port,
-    db=1,
     decode_responses=True
   )
   result = client.get(code)

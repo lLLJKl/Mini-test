@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import axios from "axios";
+import { api } from '@/utils/network.js';
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -16,8 +16,8 @@ const Signup = () => {
         return;
     }
     
-    axios
-        .post("http://localhost:8000/check_email", null, { params: { email } })
+    api
+        .post("/check_email", null, { params: { email } })
         .then((res) => {
         if (res.data.status) alert("이미 사용중인 이메일");
         else alert("사용 가능한 이메일");
@@ -31,8 +31,8 @@ const Signup = () => {
     const submit = (e) => {
         e.preventDefault();
 
-        axios
-            .post("http://localhost:8000/signup", { name, email, gender })
+        api
+            .post("/signup", { name, email, gender })
             .then((res) => {
             if (res.data.status) {
                 alert(`${name}님 가입을 축하합니다!`);
