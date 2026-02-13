@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, useParams} from "react-router" 
+import { useNavigate} from "react-router" 
 import { api } from '@/utils/network.js'
 
 
@@ -33,10 +33,10 @@ import { api } from '@/utils/network.js'
     <>
     <div className="container mt-3">
 		<h1 className="display-1 text-center">게시글 작성</h1>
-		<form>
+		<form onSubmit={submit_event}>
 			<div className="mb-3 mt-3">
 				<label htmlFor="title" className="form-label">제목</label>
-				<input type="text" className="form-control" id="title" placeholder="제목을 입력하세요." name="title" default_value={title}/>
+				<input type="text" className="form-control" id="title" placeholder="제목을 입력하세요." name="title" Value={title} onChange={(e)=>set_title(e.target.value)}/>
 			</div>
 						
 			<div className="mb-3 mt-3">
@@ -47,10 +47,10 @@ import { api } from '@/utils/network.js'
 			</div>
 			<div className="d-flex">
 				<div className="p-2 flex-fill d-grid">
-					<button type = "submit" className="btn btn-primary">등록</button>
+					<button type = "submit" className="btn btn-primary" >등록</button>
 				</div>
 				<div className="p-2 flex-fill d-grid">
-					<button type="button" className="btn btn-primary" onClick={()=>navigate=("/")}>취소</button>
+					<button type="button" className="btn btn-primary" onClick={() => navigate("/")}> 취소 </button>
 				</div>
 			</div>
 		</form>

@@ -13,7 +13,7 @@ from settings import settings
 from db import findOne, save, findAll
 import json
 import redis
-
+import board
 
 class FileItem(BaseModel):
   filename: str
