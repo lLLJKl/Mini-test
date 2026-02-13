@@ -13,7 +13,7 @@ import { useAuth } from '@hooks/AuthProvider.jsx'
     
     
    const submit_event = e =>{
-       e.prevent_default()
+       e.preventDefault()
        const params ={title,content} 
        
         if (!title || !content) {
@@ -21,23 +21,23 @@ import { useAuth } from '@hooks/AuthProvider.jsx'
          return;
         }
         api
-        .put("/board_add", params) 
-        .then(res=>{alert(res.data.message)
+        .post("/board/add", params) 
+        .then(res=>{
               if(res.data.status) 
                navigate ("/"),
                alert(`글이 등록되었습니다.`)
             })  
-            .catch(err=>
-               console.error(err),
-               alert("오류 발생")
-            )
+         .catch((err) => {
+         console.error(err);
+         alert("오류 발생");
+         });
         
       }
    useEffect(()=>{
     if(!checkAuth()) navigate("/");
   }, [])
    const click = e => {
-      e.prevent_default()
+      e.preventDefault()
       navigate("/")
    }
    return(
@@ -47,12 +47,12 @@ import { useAuth } from '@hooks/AuthProvider.jsx'
 		<form onSubmit={submit_event}>
 			<div className="mb-3 mt-3">
 				<label htmlFor="title" className="form-label">제목</label>
-				<input type="text" className="form-control" id="title" placeholder="제목을 입력하세요." name="title" defaultValue={title} onChange={e=>set_title(e.target.value)}/>
+				<input type="text" className="form-control" id="title" placeholder="제목을 입력하세요." name="title" value={title} onChange={e=>set_title(e.target.value)}/>
 			</div>
 						
 			<div className="mb-3 mt-3">
 				<label htmlFor="content" className="form-label">내용</label>
-				<textarea type="text" className="form-control h-50" rows="10" placeholder="내용을 입력하세요." defaultValue={content} onChange={e=>set_content(e.target.value)}
+				<textarea type="text" className="form-control h-50" rows="10" placeholder="내용을 입력하세요." value={content} onChange={e=>set_content(e.target.value)}
 					name="content"></textarea>
 			</div>
 			<div className="d-flex">
@@ -60,7 +60,7 @@ import { useAuth } from '@hooks/AuthProvider.jsx'
 					<button type = "submit" className="btn btn-primary">등록</button>
 				</div>
 				<div className="p-2 flex-fill d-grid">
-					<button type="button" className="btn btn-primary" onClick={e=>click}>취소</button>
+					<button type="button" className="btn btn-primary" onClick={click}>취소</button>
 				</div>
 			</div>
 		</form>

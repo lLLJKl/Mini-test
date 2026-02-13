@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
-
+import { useAuth } from '@/hooks/Authprovider.jsx';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const navigator = useNavigate();
+  const navigate = useNavigate();
+  const { refreshAuth } = useAuth();
 
   const sendMail = (e) => {
     e.preventDefault();
@@ -25,15 +26,15 @@ const Login = () => {
   const verify = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:8000/code", 
-        { id: code }, 
-        { withCredentials: true }
-    )
-      .then((res) => {
-        if (res.data.status) 
-        alert("인증 성공"),
-        navigator("/")
-        else alert("인증 실패");
+      .post("http://localhost:8000/code", { id: code }, { withCredentials: true })
+      .then(async (res) => {
+        if (res.data.status) {
+          alert("인증 성공");
+          await refreshAuth();     //여기서 즉시 로그인 상태 갱신
+          navigate("/");           // 이제 새로고침 없이 nav가 바뀜
+        } else {
+          alert("인증 실패");
+        }
       })
       .catch((err) => {
         console.error(err);

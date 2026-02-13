@@ -25,7 +25,7 @@ def board(boardAddModel: BoardAddModel, payload=Depends(get_user), user: str = C
     return {"status": False, "message": "로그인 정보가 없습니다."}
 
   sql = (
-    f"INSERT INTO mini.`board` (`title`, `content`, `userNo`) "
+    f"INSERT INTO mini.`board` (`title`, `content`, `user_no`) "
     f"VALUES ('{boardAddModel.title}', '{boardAddModel.content}', {login_row['user_no']})"
   )
   data = add_key(sql)
@@ -37,9 +37,9 @@ def board(boardAddModel: BoardAddModel, payload=Depends(get_user), user: str = C
 def board(boardSearchModel: BoardSearchModel):
   cnt = 5
   sql1 = f"""SELECT b.`no`, b.`title`, b.`content`, u.`name`
-      FROM edu.`board` AS b
-     INNER JOIN edu.`user` AS u
-        ON (b.`userNo` = u.`no` AND u.`delYn` = 0)
+      FROM mini.`board` AS b
+     INNER JOIN mini.`user` AS u
+        ON (b.`user_no` = u.`no` AND u.`delYn` = 0)
      WHERE b.`delYn` = 0 
        AND b.`title` LIKE '%{boardSearchModel.search}%' 
      ORDER BY 1 desc
@@ -49,9 +49,9 @@ def board(boardSearchModel: BoardSearchModel):
   pagination = {"page": boardSearchModel.page + 1, "total": 0}
   if len(result) > 0:
     sql2 = sql = f"""SELECT count(*) as total 
-      FROM edu.`board` AS b
-    INNER JOIN edu.`user` AS u
-        ON (b.`userNo` = u.`no` AND u.`delYn` = 0)
+      FROM mini.`board` AS b
+    INNER JOIN mini.`user` AS u
+        ON (b.`user_no` = u.`no` AND u.`delYn` = 0)
     WHERE b.`delYn` = 0 
       AND b.`title` LIKE '%{boardSearchModel.search}%'
     """
@@ -63,17 +63,17 @@ def board(boardSearchModel: BoardSearchModel):
 
 @router.post("/{no}")
 def board(no: int, payload = Depends(get_user)):
-  sql = f"""SELECT b.`no`, b.`title`, b.`content`, u.`name`, b.`userNo`
-      FROM edu.`board` AS b
-    INNER JOIN edu.`user` AS u
-        ON (b.`userNo` = u.`no` AND u.`delYn` = 0)
+  sql = f"""SELECT b.`no`, b.`title`, b.`content`, u.`name`, b.`user_no`
+      FROM mini.`board` AS b
+    INNER JOIN mini.`user` AS u
+        ON (b.`user_no` = u.`no` AND u.`delYn` = 0)
     WHERE b.`delYn` = 0 
       AND b.`no` = {no}
   """
   result = findOne(sql)
   if result:
     if payload:
-      role = int(payload["sub"]) == result["userNo"]
+      role = int(payload["sub"]) == result["user_no"]
     else:
       role = False
     return {"status": True, "result": result, "role": role}
