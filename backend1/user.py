@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, EmailStr
-from db import save # 사용하시는 db 모듈의 save 함수
+from db import save, add_key, findOne # 사용하시는 db 모듈의 save 함수
 from auth import get_user
 
 router = APIRouter(prefix="/user", tags=["사용자"])
@@ -57,3 +57,54 @@ async def update_user(userModel: UserModel, payload = Depends(get_user)):
         return {"status": True, "message": "사용자 정보가 성공적으로 수정되었습니다."}
     
     return {"status": False, "message": "데이터베이스 수정 중 오류가 발생했습니다."}
+
+@router.post("/user")
+def get_user_info(user = Depends(get_user)):
+    user_no = user["no"]
+
+    sql = f"""
+        SELECT no, name, email, gender, reg_date, mod_date, profile
+        FROM mini.`user`
+        WHERE no = {user_no}
+          AND del_yn = 0
+    """
+
+    result = findOne(sql)
+
+    if result:
+        return {
+            "status": True,
+            "result": result,
+            "role": user.get("role", False)
+        }
+
+    return {
+        "status": False,
+        "message": "사용자 정보 없음"
+    }
+
+
+@router.patch("/user")
+def delete_user(user = Depends(get_user)):
+    user_no = user["no"]
+
+    sql = f"""
+        UPDATE mini.`user`
+        SET 
+            del_yn = 1,
+            mod_date = NOW()
+        WHERE no = {user_no}
+    """
+
+    result = add_key(sql)
+
+    if result[0]:
+        return {
+            "status": True,
+            "message": "회원 탈퇴 처리 완료"
+        }
+
+    return {
+        "status": False,
+        "message": "탈퇴 처리 실패"
+    }

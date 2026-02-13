@@ -10,9 +10,11 @@ from kafka import KafkaProducer
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from settings import settings
-from db import findOne, save, findAll
+from db import findOne, save, findAll, add_key
 import json
 import redis
+import user
+import board
 
 
 class FileItem(BaseModel):
@@ -70,52 +72,38 @@ def checkDir():
 
 def saveFile(file):
   checkDir()
-  origin = file.filename
-  ext = origin.split(".")[-1].lower()
-  id = uuid.uuid4().hex
-  new_name = f"{id}.{ext}"
-  data = { "id": id, "origin": origin, "ext": ext, "new_name": new_name }
-  db.append(data)
-  path = UPLOAD_DIR / new_name
-  with path.open("wb") as f:
-    shutil.copyfileobj(file.file, f)
-
-# @app.get("/")
-# def root():
-#   return {"status": True}
-
-# @app.post("/upload")
-# def upload(files: List[UploadFile] = File(), txt: str = Form()):
-#   print(txt)
-#   for file in files:
-#     saveFile(file)
-#   return {"status": True}
+  origin = file.filename 
+  ext = file.filename.split(".")[-1].lower()
+  new_name = f"{uuid.uuid4().hex}.{ext}"
+  sql = f"""
+      UPDATE mini.`user`
+      SET 
+        `origin` = '{origin}',
+        `ext` = '{ext}',
+        `new_name` = '{new_name}'
+      WHERE `no` = {no}
+      """
+  result = add_key(sql)
+  if result[0]:
+    path = UPLOAD_DIR/ new_name
+    with path.open("wb") as f:
+      shutil.copyfileobj(file.file, f)
+    return result[1]
+  return 0 
 
 @app.post("/upload")
-def upload(model: FileModel, files: List[UploadFile] = File()):
-  print(model)
-  print(files)
+def upload(files: List[UploadFile] = File(), txt : str = Form()):
+  print(txt)
+  arr = []
   for file in files:
-    saveFile(file)
-    saveFile(model)
-  return {"status": True}
+    arr.append(saveFile(file))
+  return {"status" : True, "result": arr }
 
-# @app.get("/images")
-# def images():
-#   return {"status": True, "result": db}
+@app.get("/images")
+def images():
+  sql = "select * from mini.`user` order by no desc"
+  return {"status": True, "result": findAll(sql)}
 
-# # @app.get("/download")
-# # def download(id: str):
-# #   for row in db:
-# #     if row["id"] == id:
-# #       newName = row["newName"]
-# #       origin = row["origin"]
-# #       break
-# #   if newName:
-# #     print(newName)
-# #     path = UPLOAD_DIR / newName
-# #     return FileResponse(path=path, filename=origin)
-# #   return {"status": False}
 
 def set_token(no: int):
   try:
@@ -211,3 +199,8 @@ def code(model: CodeModel, response : Response):
     )
       return {"status": True}
   return {"status": False}
+
+
+apis = [  user.router, board.router ]
+for router in apis:
+  app.include_router(router)
