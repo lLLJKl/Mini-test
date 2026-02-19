@@ -74,7 +74,7 @@ def images():
 @router.get("/download")
 def download(id : str):
   sql = f"""
-    select `origin`, new_name` from mini.`user` where `no` = {id}
+    select `origin`, `new_name` from mini.`user` where `no` = {id}
   """
   result= findOne(sql)
   if result:
