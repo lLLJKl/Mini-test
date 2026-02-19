@@ -20,7 +20,7 @@ const Nav = () => {
   useEffect(() => {
     api.post("/user")
       .then(res => {
-        if (res.data.status) {
+        if (res.data.status && res.data.result) {
           setProfile(res.data.result.profile ?? 0)
         }
       })
