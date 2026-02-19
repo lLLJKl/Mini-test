@@ -1,0 +1,115 @@
+[1mdiff --git a/frontend/src/hooks/AuthProvider.jsx b/frontend/src/hooks/AuthProvider.jsx[m
+[1mindex 91efff8..a74d026 100644[m
+[1m--- a/frontend/src/hooks/AuthProvider.jsx[m
+[1m+++ b/frontend/src/hooks/AuthProvider.jsx[m
+[36m@@ -1,50 +1,75 @@[m
+[31m-import { createContext, useContext, useState, useEffect } from "react"[m
+[32m+[m[32mimport { createContext, useContext, useEffect, useState } from "react";[m
+ import { useNavigate } from "react-router";[m
+[31m-import { useCookies } from 'react-cookie'[m
+[31m-import { api } from '@utils/network.js'[m
+[32m+[m[32mimport { api } from "@utils/network.js";[m
+ [m
+[31m-export const AuthContext = createContext()[m
+[32m+[m[32mexport const AuthContext = createContext(null);[m
+ [m
+[31m-const AuthProvider = ({children}) => {[m
+[31m-  const [isLogin, setIsLogin] = useState(false)[m
+[31m-  const navigate = useNavigate()[m
+[31m-  const [cookies, setCookie, removeCookie] = useCookies(['ck']);[m
+[32m+[m[32mconst AuthProvider = ({ children }) => {[m
+[32m+[m[32m  const [isLogin, setIsLogin] = useState(false);[m
+[32m+[m[32m  const [loading, setLoading] = useState(true);[m[41m [m
+[32m+[m[32m  const navigate = useNavigate();[m
+[32m+[m[41m  [m
+[32m+[m[32m  // refreshAuth: 서버에 "현재 쿠키(user)가 유효한 로그인 상태인지" 확인해서 isLogin 값을 업데이트하는 함수[m
+[32m+[m[32m  // 서버(/auth/me)가 쿠키를 검증한 결과(status)를 받아서 프론트 상태로 반영[m
+[32m+[m[32m  // 기존 localstorage에 로그인 상태 정보를 보관하던 방식에서 별도의 로그인 상태 정보를 식별할 수 있는 엔드포인트 (backend1: auth.py - /me)를 생성하여[m
+[32m+[m[32m  // 로그인 시에 로그인 상태를 조회하여 갱신해줍니다[m
+[32m+[m[32m  const refreshAuth = async () => {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      const res = await api.get("/auth/me");[m[41m [m
+[32m+[m[32m      setIsLogin(!!res.data?.status);[m
+[32m+[m[32m    } catch (e) {[m
+[32m+[m[32m      setIsLogin(false);[m
+[32m+[m[32m    }[m[41m [m
+[32m+[m[32m  };[m
+ [m
+[31m-  const setAuth = status => {[m
+[31m-    localStorage.setItem("user", status);[m
+[31m-    setIsLogin(status);[m
+[32m+[m[32m  // 컴포넌트가 처음 마운트(앱 시작/새로고침)될 때 딱 1번 실행[m
+[32m+[m[32m  // -> 쿠키가 있으면 로그인 유지되는 핵심 로직[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    refreshAuth();[m
+[32m+[m[32m  }, []);[m
+[32m+[m
+[32m+[m[32m  // setAuth: 로그인 성공 직후(예: /code 성공) 호출해서[m
+[32m+[m[32m  // 서버에 다시 /auth/me 확인을 하고, 홈으로 이동시키는 함수[m
+[32m+[m
+[32m+[m[32m  const setAuth = async () => {[m
+[32m+[m[32m    setLoading(true);[m
+[32m+[m[32m    await refreshAuth();[m[41m [m
+     navigate("/");[m
+[31m-  }[m
+[32m+[m[32m  };[m
+ [m
+[31m-  const clearAuth = () => {[m
+[31m-    localStorage.removeItem("user")[m
+[31m-    setIsLogin(false)[m
+[31m-    navigate("/")[m
+[31m-  }[m
+[32m+[m[32m// removeAuth: 서버에 로그아웃을 요청해 쿠키를 삭제하는 실제 로그아웃 처리이고, clearAuth는 프론트 상태와 UI만 로그아웃처럼 바꾸는 상태 정리 함수다.[m
+[32m+[m[32m// 서버 로그아웃 요청이 네트워크 오류나 서버 문제로 실패해도, clearAuth를 사용하면 UI를 즉시 로그아웃 상태로 바꿔 사용자 혼란을 막을 수 있다.[m
+[32m+[m[32m// 쿠키 만료나 세션 종료로 /auth/me가 false가 될 경우, 서버 로그아웃을 호출할 필요 없이 clearAuth로 프론트 상태만 정리하면 된다.[m
+[32m+[m[32m// 로그인 필요 페이지 접근이나 인증 오류 상황에서도 clearAuth를 사용해 자동으로 로그아웃 UI 처리와 페이지 이동을 할 수 있다.[m
+[32m+[m[32m// 즉, removeAuth는 서버 처리용, clearAuth는 프론트 상태/UX 처리용으로 역할이 달라 둘 다 필요하다.[m
+ [m
+[32m+[m[32m  const clearAuth = () => {[m
+[32m+[m[32m    setIsLogin(false);[m
+[32m+[m[32m    navigate("/");[m
+[32m+[m[32m  };[m
+[32m+[m[41m  [m
+[32m+[m[32m  // removeAuth: 실제 서버 로그아웃 요청[m
+[32m+[m[32m  // - POST /logout으로 쿠키(user) 삭제 요청[m
+[32m+[m[32m  // - 성공하면 clearAuth로 프론트 상태도 초기화[m
+   const removeAuth = () => {[m
+     api.post("/logout")[m
+[31m-    .then(res => {[m
+[31m-      if(res.data.status) clearAuth()[m
+[31m-    })[m
+[31m-    .catch(err => console.error(err))[m
+[31m-  }[m
+[32m+[m[32m      .then((res) => {[m
+[32m+[m[32m        if (res.data?.status) clearAuth();[m
+[32m+[m[32m      })[m
+[32m+[m[32m      .catch((err) => console.error(err));[m
+[32m+[m[32m  };[m
+ [m
+[31m-  const checkAuth = () => {[m
+[31m-    return localStorage.getItem("user") ? true : false[m
+[31m-  }[m
+[32m+[m[32m  const checkAuth = () => isLogin;[m
+ [m
+[31m-  useEffect(() => {[m
+[31m-    if(localStorage.getItem("user")) setIsLogin(true)[m
+[31m-  }, [])[m
+[32m+[m[32m  if (loading) return null;[m
+ [m
+   return ([m
+[31m-    <AuthContext.Provider value={{ isLogin, setAuth, removeAuth, clearAuth, checkAuth }}>[m
+[32m+[m[32m    <AuthContext.Provider value={{ isLogin, setAuth, removeAuth, clearAuth, checkAuth, refreshAuth }}>[m
+       {children}[m
+     </AuthContext.Provider>[m
+[31m-  )[m
+[31m-}[m
+[32m+[m[32m  );[m
+[32m+[m[32m};[m
+ [m
+[31m-export const useAuth = () => useContext(AuthContext)[m
+[32m+[m[32mexport const useAuth = () => useContext(AuthContext);[m
+ [m
+[31m-export default AuthProvider[m
+\ No newline at end of file[m
+[32m+[m[32mexport default AuthProvider;[m
+\ No newline at end of file[m
