@@ -1,100 +1,142 @@
-import { useState, useEffect } from "react"
-import { useNavigate, useParams } from "react-router"
-import { api } from '@/utils/network.js';
-import {useAuth} from '@hooks/AuthProvider.jsx'
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate, useParams } from "react-router";
+import { api } from '@/utils/network.js'; 
+import { useAuth } from '@/hooks/Authprovider.jsx';
 
+const Board_view = () => {
+    const [board, set_board] = useState({
+        no: 0,
+        title: "",
+        content: "",
+        name: "",
+    });
+    const [replies, set_replies] = useState([]); 
+    const [new_reply, set_new_reply] = useState(""); 
+    const [role, set_role] = useState(false); 
 
-const Board_edit = () =>{
-    
-        const [no, set_no] = useState(0)      
-        const [title, set_title] = useState("")
-        const [content, set_content] = useState("")
-        const [role, set_role] = useState(false)
-        const [name, set_name] = useState("")  //useState 를 이용해 이름,번호,내용이 새로고침을 하더라도 불러오도록 사용하는 것
-        const params = useParams(); //글을 작성후 구분하기 위한 번호를 주기 위한 
-        const navigate = useNavigate() //특정 페이지로 이동하기 위한 변수
-        const { checkAuth } = useAuth() //로그인 된 상태인지 쉽게 확인하기 위한 변수
-        const submit_event = e =>{
-          e.preventDefault()
-          if (!title.trim()) {
-        alert("제목을 입력하세요.");
-        return;
-    }
-    
-    if (!content.trim()) {
-        alert("내용을 입력하세요.");
-        return;
-    }
-          
-          const edit_data = 
-          { title : title,
-            content : content };
+    const { user } = useAuth();
+    const params = useParams();
+    const navigate = useNavigate();
 
-          api.patch(`/board/${params.no}`,edit_data)  
-             .then(res=>{
-                alert(res.data.message)
-                if(res.data.status) navigate (`/board_view/${no}`)
-               })  
-            .catch(err=>console.error(err))   //버튼을 눌렀을때 서버에 내용을 제출하고, params 로 글 번호를 부여 하고 작성 완료되면 부여받은 번호의 페이지로 이동한다
-        
-            }
-    const set_data = data => {
-        set_no(data.no)
-        set_content(data.content)
-        set_name(data.name)
-        set_title(data.title)
-    };
-   useEffect(() => {
-         api.post(`/board/${params.no,navigate}`)
+    const fetchBoard_data = useCallback(() => {
+        api.get(`/board/${params.no}`)
             .then(res => {
                 if (res.data.status) {
-                    set_data(res.data.result);
+                    set_board(res.data.result);
+                    set_role(res.data.role);
+                    // [수정] 댓글 목록이 res.data.replies 등으로 온다면 여기서 업데이트!
+                    if (res.data.replies) set_replies(res.data.replies);
                 } else {
                     alert(res.data.message);
                     navigate("/");
                 }
             })
-            .catch(err => console.error(err));
-    }, [params.no]); 
+            .catch(err => console.error("데이터를 가져오는데 실패했습니다:", err));
+    }, [params.no, navigate]);
 
-return (
-        <div className="container mt-3">
-            <h1 className="display-1 text-center">게시글 수정</h1>
-            <form onSubmit={submit_event}>
-                <div className="mb-3 mt-3">
-                    <label htmlFor="title" className="form-label">제목</label>
-                    <input 
-                        type="text" 
-                        className="form-control" 
-                        id="title" 
-                        value={title} 
-                        onChange={(e) => set_title(e.target.value)} 
-                    />
+    useEffect(() => {
+        fetchBoard_data();
+    }, [fetchBoard_data]);
+
+    const reply_submit = () => {
+        if (!user) return alert("로그인이 필요합니다.");
+        if (!new_reply.trim()) return alert("댓글 내용을 입력하세요.");
+
+        api.post("/board/reply", { boardNo: params.no, content: new_reply })
+            .then(res => {
+                if (res.data.status) {
+                    set_new_reply(""); 
+                    fetchBoard_data(); // 데이터 갱신
+                    alert("댓글이 등록되었습니다.");
+                } else {
+                    alert(res.data.message);
+                }
+            })
+            .catch(err => console.error("댓글 등록 실패:", err));
+    };
+
+    // [추가] 엔터키 입력 핸들러
+    const onKeyPress = (e) => {
+        if (e.key === 'Enter') reply_submit();
+    };
+
+    return (
+        <div className="container mt-3 mb-5">
+            <h1 className="display-4 text-center">게시글</h1>
+            <div className="card mb-3">
+                <div className="card-body">
+                    {/* board 객체에서 직접 꺼내 쓰면 초기 렌더링 시 undefined 에러를 방지합니다 */}
+                    <h2 className="card-title">{board.title}</h2>
                 </div>
-                <div className="mb-3 mt-3">
-                    <label htmlFor="name" className="form-label">작성자</label>
-                    <input type="text" className="form-control" id="name" value={name} disabled />
+            </div>
+
+            <form>
+                <div className="mb-3">
+                    <label className="form-label">작성자</label>
+                    <input type="text" className="form-control" readOnly value={board.name || ''} />
                 </div>
-                <div className="mb-3 mt-3">
-                    <label htmlFor="content" className="form-label">내용</label>
-                    <textarea 
-                        className="form-control h-50" 
-                        rows="10" 
-                        value={content} 
-                        onChange={(e) => set_content(e.target.value)}
-                    ></textarea>
-                </div>
-                <div className="d-flex">
-                    <div className="p-2 flex-fill d-grid">
-                        <button type="submit" className="btn btn-primary">저장</button>
-                    </div>
-                    <div className="p-2 flex-fill d-grid">
-                        <button type="button" className="btn btn-secondary" onClick={() => navigate("/board_view/${no})}> 취소 </button>
-                    </div>
+                <div className="mb-3">
+                    <label className="form-label">내용</label>
+                    <textarea className="form-control" style={{ resize: "none" }} rows="10" readOnly value={board.content || ''}></textarea>
                 </div>
             </form>
+
+            <div className="d-flex mb-4">
+                {role && (
+                    <>
+                        <div className="p-2 flex-fill d-grid">
+                            <button type="button" className="btn btn-primary" onClick={() => navigate(`/board_edit/${params.no}`)}>수정</button>
+                        </div>
+                        <div className="p-2 flex-fill d-grid">
+                            <button type="button" className="btn btn-danger" onClick={() => {
+                                if (window.confirm("정말로 삭제하시겠습니까?")) {
+                                    api.delete(`/board/${params.no}`).then(res => {
+                                        alert(res.data.message);
+                                        if (res.data.status) navigate("/");
+                                    });
+                                }
+                            }}>삭제</button>
+                        </div>
+                    </>
+                )}
+                <div className="p-2 flex-fill d-grid">
+                    <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>목록으로</button>
+                </div>
+            </div>
+            
+            <hr />
+            <h4 className="mb-3">댓글</h4>
+            <ul className="list-group mb-3">
+                {replies.length > 0 ? (
+                    replies.map((r) => (
+                        <li key={r.no || r.id} className="list-group-item">
+                            <strong>{r.name}</strong>: {r.content}
+                        </li>
+                    ))
+                ) : (
+                    <li className="list-group-item text-muted">등록된 댓글이 없습니다.</li>
+                )}
+            </ul>
+
+            <div className="input-group mb-3">
+                <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder={user ? "댓글을 입력하세요" : "로그인 후 이용 가능합니다"} 
+                    value={new_reply}
+                    onChange={(e) => set_new_reply(e.target.value)}
+                    onKeyPress={onKeyPress} // 엔터키 추가
+                    disabled={!user} // 로그인 안하면 입력 불가
+                />
+                <button 
+                    className="btn btn-success" 
+                    type="button" 
+                    onClick={reply_submit}
+                    disabled={!user}
+                >등록</button>
+            </div>
         </div>
     );
 };
 
-export default Board_edit;
+export default Board_view;
