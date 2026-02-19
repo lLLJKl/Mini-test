@@ -6,15 +6,19 @@ import math
 
 router = APIRouter(prefix="/board", tags=["게시판"])
 
+# board_add 부분 BaseModel
 class BoardAddModel(BaseModel):
   title: str = Field(..., title="제목", description="게시글 제목 입니다.")
   content: str = Field(..., title="내용", description="게시글 내용 입니다.")
 
+
+# board_edit,view,home 부분 BaseModel
 class BoardSearchModel(BaseModel):
   page: int = Field(..., title="페이지번호", description="게시글 페이징 현제 위치 정보 입니다.")
   search: str = Field(..., title="제목 검색", description="게시글에서 제목 검색 값 입니다.")
 
 
+# board_add 부분 endponit
 @router.post("/add")  
 def board(boardAddModel: BoardAddModel, payload=Depends(get_user), user: str = Cookie(None)):
   if not payload or not user:
@@ -33,6 +37,7 @@ def board(boardAddModel: BoardAddModel, payload=Depends(get_user), user: str = C
     return {"status": True, "message": "게시글 추가 완료", "result": data[1]}
   return {"status": False, "message": "게시글 추가 중 오류"}
 
+
 @router.post("")
 def board(boardSearchModel: BoardSearchModel):
   cnt = 5
@@ -45,6 +50,7 @@ def board(boardSearchModel: BoardSearchModel):
      ORDER BY 1 desc
      LIMIT {boardSearchModel.page * cnt}, {cnt}
   """
+  
   result = findAll(sql1)
   pagination = {"page": boardSearchModel.page + 1, "total": 0}
   if len(result) > 0:
@@ -69,7 +75,8 @@ def board(no: int, payload = Depends(get_user)):
         ON (b.`user_no` = u.`no` AND u.`delYn` = 0)
     WHERE b.`delYn` = 0 
       AND b.`no` = {no}
-  """
+        """
+  
   result = findOne(sql)
   if result:
     if payload:

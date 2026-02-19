@@ -1,6 +1,6 @@
 import App from '@pages/App.jsx'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from "react-router";
+import { BrowserRouter } from "react-router-dom";
 import AuthProvider from '@hooks/AuthProvider.jsx'
 import { CookiesProvider } from 'react-cookie'
 
