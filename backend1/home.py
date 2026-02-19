@@ -36,7 +36,7 @@ def check_email(email: EmailStr):
     sql = f"""
       SELECT COUNT(*) AS state
       FROM mini.`user`
-      WHERE `email`='{email}'
+      WHERE `del_yn` = '0' and `email`='{email}'
     """
     result = findOne(sql)
     if result:
