@@ -55,9 +55,20 @@ def signup(model: SignUpModel):
 
 @router.post("/login")
 def login(model: LoginModel):
+    row = findOne(f"""
+      SELECT `del_yn`
+      FROM mini.`user`
+      WHERE `email` = '{model.email}'
+      LIMIT 1
+    """)
+    if not row:
+        return {"status": False, "message": "존재하지 않는 계정입니다."}
+    if str(row["del_yn"]) != "0":
+        return {"status": False, "message": "비활성화된 계정입니다."}
+
     pd.send(settings.kafka_topic, dict(model))
     pd.flush()
-    return{"status":True}
+    return {"status": True}
 
 @router.post("/logout")
 def logout(response: Response):
@@ -78,22 +89,34 @@ def checkCode(code: str):
   return None
 
 @router.post("/code")
-def code(model: CodeModel, response : Response):
-  print(model.id)
-  result = checkCode(model.id)
-  if result:
-    id = set_token(result)
-    if id:
-      response.set_cookie(
+def code(model: CodeModel, response: Response):
+  result = checkCode(model.id)  # result = email 이라고 가정
+  if not result:
+    return {"status": False, "message": "인증 코드가 유효하지 않습니다."}
+
+  user_row = findOne(f"""
+    SELECT `no`, `del_yn`
+    FROM mini.`user`
+    WHERE `email` = '{result}'
+    LIMIT 1
+  """)
+  if not user_row:
+    return {"status": False, "message": "존재하지 않는 계정입니다."}
+
+  if int(user_row["del_yn"]) == 1:
+    return {"status": False, "message": "비활성화된 계정입니다. 관리자에게 문의하세요."}
+  
+  id = set_token(result)
+  if id:
+    response.set_cookie(
       key="user",
       value=id,
       max_age=60 * 30,
       expires=60 * 30,
-      # path="/",
-      # domain="react",
       secure=False,
       httponly=True,
       samesite="lax",
     )
-      return {"status": True}
-  return {"status": False}
+    return {"status": True}
+
+  return {"status": False, "message": "토큰 발급 실패"}

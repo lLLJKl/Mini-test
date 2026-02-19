@@ -1,27 +1,63 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { api } from '@/utils/network.js'; 
 import { useAuth } from '@/hooks/Authprovider.jsx';
 
-
 const Board_view = () => {
-    
-    const [no, set_no] = useState(0);
-    const [title, set_title] = useState("");
-    const [content, set_content] = useState("");
-    const [name, set_name] = useState("");
-    const [reply, set_reply] = useState([]);
-    const [new_reply, set_new_reply] = useState("");
-    const [reg_date, set_reg_date] = useState(""); 
+    const [board, set_board] = useState({
+        no: 0,
+        title: "",
+        content: "",
+        name: "",
+    });
+    const [replies, set_replies] = useState([]); // 댓글 목록
+    const [new_reply, set_new_reply] = useState(""); // 입력할 새 댓글
+
+    const { title, content, name } = board;
     const [role, set_role] = useState(false); 
     
-    const { user } = useAuth();
+    const { isLogin  } = useAuth();
     const params = useParams();
     const navigate = useNavigate();
 
+    const fetchBoard_data = useCallback(() => {
+    console.log("params.no =", params.no);
+
+    api.post(`/board/${params.no}`)
+        .then(res => {
+        if (res.data.status) {
+            set_board(res.data.result);
+            set_role(res.data.role);
+            
+            return api.get(`/board/reply/${params.no}`);
+        } else {
+            alert(res.data.message);
+            navigate("/");
+            return null;
+        }
+        })
+        .then(res2 => {
+        if (res2?.data?.status) {
+            set_replies(res2.data.result || []);
+        }
+        })
+        .catch(err => console.error("데이터를 가져오는데 실패:", err));
+    }, [params.no, navigate]);
     
+    const edit = () => {
+        if (!isLogin ) {
+            alert("로그인이 필요한 서비스입니다.");
+            return;
+        }
+        if (!role) {
+            alert("본인이 작성한 글만 수정 가능합니다.");
+            return;
+        }
+        navigate(`/board_edit/${params.no}`);
+    };
+
     const del_event = () => {
-        if (window.confirm("삭제하시겠습니까?")) {
+        if (window.confirm("정말로 삭제하시겠습니까?")) {
             api.delete(`/board/${params.no}`) 
                 .then(res => {
                     alert(res.data.message);
@@ -31,70 +67,49 @@ const Board_view = () => {
         }
     };
 
-   
-    const set_data = (data) => {
-        set_no(data.no);
-        set_title(data.title);
-        set_content(data.content);
-        set_name(data.name);
-        set_reg_date(data.regDate || ""); 
-        if (data.reply) set_reply(data.reply);
-    };
-
     useEffect(() => {
-        api.post(`/board/${params.no}`)
-            .then(res => {
-                if (res.data.status) {
-                    set_data(res.data.result);
-                    set_role(res.data.role);
-                } else {
-                    alert(res.data.message);
-                    navigate("/");
-                }
-            })
-            .catch(err => console.error(err));
-    }, [params.no]);
+        fetchBoard_data();
+    }, [fetchBoard_data]);
 
-    
+
     const reply_submit = () => {
-        if (!new_reply.trim()) return alert("댓글 내용을 입력하세요.");
-        api.put("/board/comment", { boardNo: params.no, content: new_reply })
-            .then(res => {
-                if (res.data.status) {
-                    set_new_reply(""); 
-                    
-                    window.location.reload(); 
-                }
-            });
+    if (!isLogin ) return alert("로그인이 필요합니다."); 
+    if (!new_reply.trim()) return alert("댓글 내용을 입력하세요.");
+
+    api.post("/board/reply", {
+        board_no: Number(params.no), 
+        reply: new_reply          
+    })
+    .then(res => {
+        if (res.data.status) {
+        set_new_reply("");
+        set_replies(prev => [res.data.result, ...prev]);
+        alert("댓글이 등록되었습니다.");
+        } else {
+        alert(res.data.message);
+        }
+    })
+    .catch(err => console.error("댓글 등록 실패:", err));
+
     };
 
-    
     return (
         <div className="container mt-3 mb-5">
             <h1 className="display-4 text-center">게시글</h1>
-            <div className="card mb-4">
+            <div className="card mb-3">
                 <div className="card-body">
                     <h2 className="card-title">{title}</h2>
-                    <p className="text-muted">작성자: {name}</p>
                 </div>
             </div>
 
             <form>
                 <div className="mb-3 mt-3">
-                    <label htmlFor="title" className="form-label">제목</label>
-                    <input type="text" className="form-control" readOnly value={title} />
+                    <label className="form-label">작성자</label>
+                    <input type="text" className="form-control" readOnly value={name || ''} />
                 </div>
                 <div className="mb-3 mt-3">
-                    <label htmlFor="name" className="form-label">작성자</label>
-                    <input type="text" className="form-control" readOnly value={name} />
-                </div>
-                <div className="mb-3 mt-3">
-                    <label htmlFor="regDate" className="form-label">작성날짜</label>
-                    <input type="text" className="form-control" readOnly value={reg_date} />
-                </div>
-                <div className="mb-3 mt-3">
-                    <label htmlFor="content" className="form-label">내용</label>
-                    <textarea className="form-control h-50" style={{ resize: "none" }} rows="10" readOnly value={content}></textarea>
+                    <label className="form-label">내용</label>
+                    <textarea className="form-control" style={{ resize: "none" }} rows="10" readOnly value={content || ''}></textarea>
                 </div>
             </form>
 
@@ -102,7 +117,7 @@ const Board_view = () => {
                 {role && (
                     <>
                         <div className="p-2 flex-fill d-grid">
-                            <button type="button" className="btn btn-primary" onClick={() => navigate(`/boardedit/${no}`)}>수정</button>
+                            <button type="button" className="btn btn-primary" onClick={edit}>수정</button>
                         </div>
                         <div className="p-2 flex-fill d-grid">
                             <button type="button" className="btn btn-danger" onClick={del_event}>삭제</button>
@@ -113,23 +128,34 @@ const Board_view = () => {
                     <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>목록으로</button>
                 </div>
             </div>
-
             <hr />
             <h4 className="mb-3">댓글</h4>
             <ul className="list-group mb-3">
-                {reply && reply.map((c) => (
-                    <li key={c.no} className="list-group-item">
-                        <strong>{c.name}</strong> : {c.content}
-                    </li>
-                ))}
+                {replies.length > 0 ? (
+                    replies.map((r, i) => (
+                        <li key={i} className="list-group-item">
+                            <strong>{r.name}</strong>: {r.content}
+                        </li>
+                    ))
+                ) : (
+                    <li className="list-group-item text-muted" >등록된 댓글이 없습니다.</li>
+                )}
             </ul>
 
+            {/* 3. 댓글 입력창 UI 추가 */}
             <div className="input-group mb-3">
-                <input type="text" className="form-control" value={new_reply}
-                    onChange={(e) => set_new_reply(e.target.value)} placeholder="댓글을 입력하세요" />
-                <button type="button" className="btn btn-success" onClick={reply_submit}>등록</button>
+                <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="댓글을 입력하세요" 
+                    value={new_reply}
+                    onChange={(e) => set_new_reply(e.target.value)}
+                />
+                <button className="btn btn-success" type="button" onClick={reply_submit}>등록</button>
             </div>
         </div>
+
+        
     );
 }; 
 

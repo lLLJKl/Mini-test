@@ -17,6 +17,10 @@ class BoardSearchModel(BaseModel):
 class BoardEditModel(BaseModel):
    content: str  = Field(..., title="내용", description="게시글에서 수정할 내용 입니다.")
 
+class BoardReplyModel(BaseModel):
+  reply: str
+  board_no: int
+
 
 @router.post("/add")  
 def board(boardAddModel: BoardAddModel, payload=Depends(get_user), user: str = Cookie(None)):
@@ -35,6 +39,48 @@ def board(boardAddModel: BoardAddModel, payload=Depends(get_user), user: str = C
   if data[0]:
     return {"status": True, "message": "게시글 추가 완료", "result": data[1]}
   return {"status": False, "message": "게시글 추가 중 오류"}
+
+@router.post("/reply")
+def add_reply(model: BoardReplyModel, payload=Depends(get_user), user: str = Cookie(None)):
+    if not payload or not user:
+        return {"status": False, "message": "로그인이 필요합니다."}
+
+    login_row = findOne(f"SELECT `user_no` FROM mini.`login` WHERE `id`='{user}'")
+    if not login_row:
+        return {"status": False, "message": "로그인 정보가 없습니다."}
+
+    content = model.reply.replace("'", "''")
+
+    ok, new_id = add_key(f"""
+      INSERT INTO mini.`reply` (`content`, `user_no`, `board_no`)
+      VALUES ('{content}', {login_row['user_no']}, {model.board_no})
+    """)
+
+    if not ok:
+        return {"status": False, "message": "댓글 추가 중 오류"}
+
+    row = findOne(f"""
+      SELECT 
+        r.no, r.content, r.user_no, r.reg_date,
+        u.name, u.new_name AS profile_img, u.ext
+      FROM mini.`reply` r
+      LEFT JOIN mini.`user` u ON u.no = r.user_no AND u.del_yn = 0
+      WHERE r.no = {new_id}
+    """)
+    return {"status": True, "message": "댓글 추가 완료", "result": row}
+
+@router.get("/reply/{board_no}")
+def list_reply(board_no: int):
+    rows = findAll(f"""
+      SELECT 
+        r.no, r.content, r.user_no, r.reg_date,
+        u.name, u.new_name AS profile_img, u.ext
+      FROM mini.`reply` r
+      LEFT JOIN mini.`user` u ON u.no = r.user_no AND u.del_yn = 0
+      WHERE r.board_no = {board_no}
+      ORDER BY r.no DESC
+    """)
+    return {"status": True, "result": rows}
 
 @router.post("")
 def board(boardSearchModel: BoardSearchModel):
