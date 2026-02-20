@@ -92,7 +92,7 @@ def board(no: int, payload = Depends(get_user)):
   return {"status": False, "message": "요청하신 게시글은 존재 하지 않습니다."}
 
 
-  # ✅ 1. 댓글 목록 조회 (프론트엔드의 load_reply 대응)
+  # 1. 댓글 목록 조회 (프론트엔드의 load_reply 대응)
 @router.post("/{no}/comment")
 def get_replies(no: int, payload = Depends(get_user)):
     # reply 테이블과 user 테이블을 조인하여 댓글 목록을 가져옵니다.
@@ -114,7 +114,7 @@ def get_replies(no: int, payload = Depends(get_user)):
             
     return {"status": True, "result": result}
 
-# ✅ 2. 댓글 등록 (프론트엔드의 reply_submit 대응)
+# 2. 댓글 등록 (프론트엔드의 reply_submit 대응)
 @router.post("/{no}/comment/add")
 def add_reply(no: int, reply: ReplyAddModel, payload = Depends(get_user)):
     if not payload:
@@ -133,7 +133,7 @@ def add_reply(no: int, reply: ReplyAddModel, payload = Depends(get_user)):
         return {"status": True, "message": "댓글이 등록되었습니다."}
     return {"status": False, "message": "댓글 등록 중 오류가 발생했습니다."}
 
-# ✅ 3. 댓글 삭제 (프론트엔드의 reply_delete 대응)
+# 3. 댓글 삭제 (프론트엔드의 reply_delete 대응)
 @router.delete("/{no}/comment/{comment_no}")
 def delete_reply(no: int, comment_no: int, payload = Depends(get_user)):
     if not payload:
@@ -184,3 +184,4 @@ def board(no: int, payload = Depends(get_user)):
     if save(sql):
       return {"status": True, "message": "게시글 삭제가 정상 처리가 되었습니다."}
   return {"status": False, "message": "게시글 삭제 중 오류가 발생 되었습니다."}
+

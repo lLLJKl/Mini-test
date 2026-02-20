@@ -20,12 +20,12 @@ const Board_edit = () =>{
           const edit_data = 
           { title : title,
             content : content }
-          api.patch(`/board/${params.no}`,edit_data)  
-             .then(res=>{
-                alert(res.data.message)
-                if(res.data.status) navigate(`/boardview/${params.no}`);
-               })  
-            .catch(err=>console.error(err))   //버튼을 눌렀을때 서버에 내용을 제출하고, params 로 글 번호를 부여 하고 작성 완료되면 부여받은 번호의 페이지로 이동한다
+            api.patch(`/board/edit?no=${params.no}`, { content })
+            .then(res => {
+                alert(res.data.message);
+                if (res.data.status) navigate(`/board_view/${params.no}`);
+            })
+            .catch(err => console.error(err));  //버튼을 눌렀을때 서버에 내용을 제출하고, params 로 글 번호를 부여 하고 작성 완료되면 부여받은 번호의 페이지로 이동한다
         
             }
     const set_data = data => {
@@ -36,7 +36,7 @@ const Board_edit = () =>{
     };
   
     useEffect(() => {
-         api.get(`/board/${params.no}`)
+         api.post(`/board/${params.no}`)
             .then(res => {
                 if (res.data.status) {
                     set_data(res.data.result);
